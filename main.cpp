@@ -6,6 +6,7 @@
 #include <wayland-client.h>
 #include <wayland-egl.h>
 #include <EGL/egl.h>
+#include <GL/gl.h>
 
 using u32 = std::uint32_t;
 
@@ -68,6 +69,7 @@ int main() {
 
     std::cout << "Wayland: All set" << std::endl;
 
+    eglBindAPI(EGL_OPENGL_API);
     EGLDisplay eglDisplay = eglGetDisplay(display);
     EGLBoolean success = eglInitialize(eglDisplay, nullptr, nullptr);
 
@@ -76,8 +78,67 @@ int main() {
         return 1;
     }
 
+    EGLint attributes[] = {
+        EGL_RED_SIZE, 1,
+        EGL_GREEN_SIZE, 1,
+        EGL_BLUE_SIZE, 1,
+        EGL_NONE
+    };
+
+    EGLConfig config;
+    EGLint num_configs;
+
+    success = eglChooseConfig(eglDisplay, attributes, &config, 1, &num_configs);
+
+    if (success != EGL_TRUE) {
+        std::cerr << "Cannot configure EGL display" << std::endl;
+        return 1;
+    }
+
+    EGLContext context = eglCreateContext(eglDisplay, config, EGL_NO_CONTEXT, nullptr);
+
+    if (context == EGL_NO_CONTEXT) {
+        std::cerr << "Cannot create EGL context" << std::endl;
+        return 1;
+    }
+
+    // TODO API bind / listeners ?
+
+    wl_egl_window* window = wl_egl_window_create(surface, 960, 540);
+    EGLSurface windowSurface = eglCreateWindowSurface(eglDisplay, config, window, nullptr);
+
+    if (windowSurface == EGL_NO_SURFACE) {
+        std::cerr << "Cannot create EGL window surface" << std::endl;
+        return 1;
+    }
+
+    success = eglMakeCurrent(eglDisplay, windowSurface, windowSurface, context);
+
+    if (success != EGL_TRUE) {
+        std::cerr << "Cannot bind EGL context" << std::endl;
+        return 1;
+    }
+
+    std::cout << "EGL: All set" << std::endl;
+
+    while (wl_display_dispatch_pending(display) != -1) {
+        glClearColor(1.0, 1.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        eglSwapBuffers(eglDisplay, windowSurface);
+    }
+
+    eglDestroySurface(eglDisplay, windowSurface);
+    wl_egl_window_destroy(window);
+    eglDestroyContext(display, context);
     eglTerminate(eglDisplay);
+
+    std::cout << "EGL: Resources released" << std::endl;
+
+    wl_shell_surface_destroy(shellSurface);
+    wl_surface_destroy(surface);
     wl_display_disconnect(display);
+
+    std::cout << "Wayland: Resources released" << std::endl;
 
     return 0;
 }
