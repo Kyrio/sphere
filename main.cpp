@@ -8,25 +8,47 @@
 #include <EGL/egl.h>
 #include <GL/gl.h>
 
+#include "clock.h"
+
 using u32 = std::uint32_t;
+using i32 = std::int32_t;
 
 wl_compositor* compositor;
 wl_shell* shell;
+wl_seat* seat;
 
 void globalAdd(void* data, wl_registry* registry, u32 name, const char* interface, u32 version) {
+    // std::cout << "Added global " << name << ": " << interface << std::endl;
     if (std::strcmp(interface, wl_compositor_interface.name) == 0) {
         compositor = (wl_compositor*) wl_registry_bind(registry, name, &wl_compositor_interface, version);
     }
     else if (std::strcmp(interface, wl_shell_interface.name) == 0) {
         shell = (wl_shell*) wl_registry_bind(registry, name, &wl_shell_interface, version);
     }
+    else if (std::strcmp(interface, wl_seat_interface.name) == 0) {
+        seat = (wl_seat*) wl_registry_bind(registry, name, &wl_seat_interface, version);
+    }
 }
 
 void globalRemove(void* data, wl_registry* registry, u32 name) {
-    std::cout << "Removed global " << name << std::endl;
+    // std::cout << "Removed global " << name << std::endl;
+}
+
+void surfacePing(void* data, wl_shell_surface* shellSurface, u32 serial) {
+    std::cout << "Ping" << std::endl;
+    wl_shell_surface_pong(shellSurface, serial);
+}
+
+void surfaceConfigure(void* data, wl_shell_surface* shellSurface, u32 edges, i32 width, i32 height) {
+    std::cout << "Configure" << std::endl;
+}
+
+void surfacePopupDone(void* data, wl_shell_surface* shellSurface) {
+    std::cout << "Popup" << std::endl;
 }
 
 wl_registry_listener registryListener = { globalAdd, globalRemove };
+wl_shell_surface_listener shellSurfaceListener = { surfacePing, surfaceConfigure, surfacePopupDone };
 
 int main() {
     wl_display* display = wl_display_connect(nullptr);
@@ -51,6 +73,11 @@ int main() {
         return 1;
     }
 
+    if (seat == nullptr) {
+        std::cerr << "Wayland seat not found" << std::endl;
+        return 1;
+    }
+
     wl_surface* surface = wl_compositor_create_surface(compositor);
 
     if (surface == nullptr) {
@@ -65,6 +92,8 @@ int main() {
         return 1;
     }
 
+    wl_shell_surface_add_listener(shellSurface, &shellSurfaceListener, nullptr);
+    wl_shell_surface_set_title(shellSurface, "Wayland");
     wl_shell_surface_set_toplevel(shellSurface);
 
     std::cout << "Wayland: All set" << std::endl;
@@ -102,8 +131,6 @@ int main() {
         return 1;
     }
 
-    // TODO API bind / listeners ?
-
     wl_egl_window* window = wl_egl_window_create(surface, 960, 540);
     EGLSurface windowSurface = eglCreateWindowSurface(eglDisplay, config, window, nullptr);
 
@@ -121,8 +148,15 @@ int main() {
 
     std::cout << "EGL: All set" << std::endl;
 
+    // TODO Key events, resize, title (?)
+
+    Clock clock;
+
     while (wl_display_dispatch_pending(display) != -1) {
-        glClearColor(1.0, 1.0, 0.0, 1.0);
+        clock.update();
+        std::cout << "dt: " << clock.delta() << std::endl;
+
+        glClearColor(0.8, 0.8, 0.8, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
         eglSwapBuffers(eglDisplay, windowSurface);
     }
