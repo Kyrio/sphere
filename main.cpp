@@ -50,8 +50,9 @@ void surfacePopupDone(void* data, wl_shell_surface* shellSurface) {
 wl_registry_listener registryListener = { globalAdd, globalRemove };
 wl_shell_surface_listener shellSurfaceListener = { surfacePing, surfaceConfigure, surfacePopupDone };
 
-int main() {
+int main(int argc, char* argv[]) {
     wl_display* display = wl_display_connect(nullptr);
+
     if (display == nullptr) {
         std::cerr << "Can't connect to Wayland display: " << std::strerror(errno) << std::endl;
         return 1;
@@ -93,7 +94,7 @@ int main() {
     }
 
     wl_shell_surface_add_listener(shellSurface, &shellSurfaceListener, nullptr);
-    wl_shell_surface_set_title(shellSurface, "Wayland");
+    wl_shell_surface_set_class(shellSurface, "sphere");
     wl_shell_surface_set_toplevel(shellSurface);
 
     std::cout << "Wayland: All set" << std::endl;
@@ -154,11 +155,13 @@ int main() {
 
     while (wl_display_dispatch_pending(display) != -1) {
         clock.update();
-        std::cout << "dt: " << clock.delta() << std::endl;
 
         glClearColor(0.8, 0.8, 0.8, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
         eglSwapBuffers(eglDisplay, windowSurface);
+
+        if (clock.sinceStart() > 5)
+            break;
     }
 
     eglDestroySurface(eglDisplay, windowSurface);
