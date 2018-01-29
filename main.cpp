@@ -7,8 +7,6 @@ int main() {
     if (!window.initWayland()) {
         return 1;
     }
-
-    std::cout << "Wayland: All set" << std::endl;
     
     if (!window.initEgl()) {
         window.releaseWayland();
@@ -16,20 +14,11 @@ int main() {
         return 1;
     }
 
-    std::cout << "EGL: All set" << std::endl;
-
-    Clock clock;
-
-    while (window.dispatchPendingEvents() != -1) {
-        clock.update();
-
+    while (window.isRunning() && window.dispatchPendingEvents() != -1) {
         glClearColor(0.8, 0.8, 0.8, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
         
         window.swapBuffers();
-
-        if (clock.sinceStart() > 5)
-            break;
     }
 
     window.releaseEgl();

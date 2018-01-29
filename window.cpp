@@ -1,8 +1,11 @@
+#include <linux/input.h>
+
 #include "window.h"
 
 Window::Window(int width, int height, std::string windowClass) :
     width(width),
     height(height),
+    running(false),
     windowClass(windowClass)
 {
 }
@@ -102,10 +105,13 @@ bool Window::initEgl() {
         return false;
     }
 
+    running = true;
+
     return true;
 }
 
 void Window::releaseEgl() {
+    eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     eglDestroySurface(eglDisplay, eglSurface);
     eglDestroyContext(display, eglContext);
     eglTerminate(eglDisplay);
@@ -115,6 +121,12 @@ void Window::releaseWayland() {
     wl_egl_window_destroy(window);
     wl_shell_surface_destroy(shellSurface);
     wl_surface_destroy(surface);
+
+    releaseKeyboard();
+    wl_seat_release(seat);
+    wl_shell_destroy(shell);
+    wl_compositor_destroy(compositor);
+
     wl_registry_destroy(registry);
     wl_display_disconnect(display);
 }
@@ -137,13 +149,34 @@ void Window::setShell(wl_shell* shell) {
 
 void Window::setSeat(wl_seat* seat) {
     this->seat = seat;
+    wl_seat_add_listener(seat, &seatListener, this);
+}
+
+void Window::setKeyboard(wl_keyboard* keyboard) {
+    this->keyboard = keyboard;
+    wl_keyboard_add_listener(keyboard, &keyboardListener, this);
+}
+
+void Window::releaseKeyboard() {
+    if (keyboard != nullptr) {
+        wl_keyboard_release(keyboard);
+        keyboard = nullptr;
+    }
+}
+
+bool Window::isRunning() {
+    return running;
+}
+
+void Window::setRunning(bool running) {
+    this->running = running;
 }
 
 void Window::resize(int width, int height) {
     wl_egl_window_resize(window, width, height, 0, 0);
 }
 
-void Window::registryAdd(void* data, wl_registry* registry, u32 name, const char* interface, u32 version) {
+void Window::registryGlobal(void* data, wl_registry* registry, u32 name, const char* interface, u32 version) {
     if (data == nullptr)
         return;
     
@@ -167,7 +200,6 @@ void Window::registryRemove(void* data, wl_registry* registry, u32 name) {
 }
 
 void Window::surfacePing(void* data, wl_shell_surface* shellSurface, u32 serial) {
-    std::cout << "Ping" << std::endl;
     wl_shell_surface_pong(shellSurface, serial);
 }
 
@@ -175,14 +207,59 @@ void Window::surfaceConfigure(void* data, wl_shell_surface* shellSurface, u32 ed
     if (data == nullptr)
         return;
     
-    std::cout << "Configure " << width << ", " << height << std::endl;
-
     Window* window = (Window*) data;
     window->resize(width, height);
 }
 
-wl_registry_listener Window::registryListener = { Window::registryAdd, Window::registryRemove };
-wl_shell_surface_listener Window::shellSurfaceListener = { Window::surfacePing, Window::surfaceConfigure, Window::surfacePopupDone };
+void Window::seatCapabilities(void* data, wl_seat* seat, u32 capabilities) {
+    if (data == nullptr)
+        return;
+    
+    Window* window = (Window*) data;
+
+    if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
+        wl_keyboard* keyboard = wl_seat_get_keyboard(seat);
+        window->setKeyboard(keyboard);
+    }
+    else {
+        window->releaseKeyboard();
+    }
+}
+
+void Window::keyboardKey(void* data, wl_keyboard* keyboard, u32 serial, u32 time, u32 key, u32 state) {
+    if (data == nullptr)
+        return;
+    
+    Window* window = (Window*) data;
+    
+    if (key == KEY_ESC && state == WL_KEYBOARD_KEY_STATE_RELEASED)
+        window->setRunning(false);
+}
+
+wl_registry_listener Window::registryListener = {
+    Window::registryGlobal,
+    Window::registryRemove
+};
+
+wl_shell_surface_listener Window::shellSurfaceListener = {
+    Window::surfacePing,
+    Window::surfaceConfigure,
+    Window::surfacePopupDone
+};
+
+wl_seat_listener Window::seatListener = {
+    Window::seatCapabilities,
+    Window::seatName
+};
+
+wl_keyboard_listener Window::keyboardListener = {
+    Window::keyboardKeymap,
+    Window::keyboardEnter,
+    Window::keyboardLeave,
+    Window::keyboardKey,
+    Window::keyboardModifiers,
+    Window::keyboardRepeatInfo
+};
 
 EGLint Window::eglAttributes[] = {
     EGL_RED_SIZE, 1,
