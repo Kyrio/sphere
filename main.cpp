@@ -1,3 +1,5 @@
+#include <GLES2/gl2.h>
+
 #include "clock.h"
 #include "window.h"
 
@@ -10,7 +12,6 @@ int main() {
     
     if (!window.initEgl()) {
         window.releaseWayland();
-        std::cout << "Wayland: Resources released" << std::endl;
         return 1;
     }
 
@@ -21,11 +22,10 @@ int main() {
         window.swapBuffers();
     }
 
-    window.releaseEgl();
-    std::cout << "EGL: Resources released" << std::endl;
+    std::cout << "Cleaning up..." << std::endl;
 
+    window.releaseEgl();
     window.releaseWayland();
-    std::cout << "Wayland: Resources released" << std::endl;
 
     return 0;
 }

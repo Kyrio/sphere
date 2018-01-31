@@ -9,7 +9,6 @@
 #include <wayland-client.h>
 #include <wayland-egl.h>
 #include <EGL/egl.h>
-#include <GL/gl.h>
 
 using u32 = std::uint32_t;
 using i32 = std::int32_t;
@@ -86,6 +85,7 @@ class Window {
         EGLSurface eglSurface;
 
         static EGLint eglAttributes[];
+        static EGLint eglContextAttributes[];
 };
 
 #endif // WINDOW_H
