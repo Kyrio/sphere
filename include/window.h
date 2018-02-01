@@ -9,6 +9,7 @@
 #include <wayland-client.h>
 #include <wayland-egl.h>
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 using u32 = std::uint32_t;
 using i32 = std::int32_t;

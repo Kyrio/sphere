@@ -173,6 +173,9 @@ void Window::setRunning(bool running) {
 }
 
 void Window::resize(int width, int height) {
+    // TODO Set viewport
+    this->width = width;
+    this->height = height;
     wl_egl_window_resize(window, width, height, 0, 0);
 }
 
@@ -266,11 +269,11 @@ EGLint Window::eglAttributes[] = {
     EGL_GREEN_SIZE, 8,
     EGL_BLUE_SIZE, 8,
     EGL_DEPTH_SIZE, 24,
-    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT_KHR,
     EGL_NONE
 };
 
 EGLint Window::eglContextAttributes[] = {
-    EGL_CONTEXT_CLIENT_VERSION, 2,
+    EGL_CONTEXT_CLIENT_VERSION, 3,
     EGL_NONE
 };

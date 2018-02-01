@@ -1,4 +1,4 @@
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 
 #include "clock.h"
 #include "window.h"
@@ -17,7 +17,7 @@ int main() {
 
     while (window.isRunning() && window.dispatchPendingEvents() != -1) {
         glClearColor(0.8, 0.8, 0.8, 1.0);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         window.swapBuffers();
     }
