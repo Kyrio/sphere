@@ -4,14 +4,14 @@ LDLIBS=-lGL -lEGL -lwayland-client -lwayland-egl
 
 .SUFFIXES:
 
-EXEC=bin/sphere
-SOURCES = $(wildcard *.cpp)
-OBJECTS = $(addprefix obj/, $(SOURCES:.cpp=.o))
+EXEC=sphere
+SOURCES = $(wildcard src/*.cpp)
+OBJECTS = $(SOURCES:src/%.cpp=obj/%.o)
 
 $(EXEC): $(OBJECTS)
 	$(CXX) $(LDLIBS) -o $@ $^
 
-obj/%.o: %.cpp
+obj/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 run: $(EXEC)
