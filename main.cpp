@@ -2,6 +2,7 @@
 
 #include "clock.h"
 #include "window.h"
+#include "shader.h"
 
 int main() {
     Window window(960, 540, "sphere");
@@ -14,6 +15,14 @@ int main() {
         window.releaseWayland();
         return 1;
     }
+
+    Shader vs(GL_VERTEX_SHADER, "shaders/vertex.glsl");
+    Shader fs(GL_FRAGMENT_SHADER, "shaders/fragment.glsl");
+
+    ShaderProgram program;
+    program.add(vs);
+    program.add(fs);
+    program.link();
 
     while (window.isRunning() && window.dispatchPendingEvents() != -1) {
         glClearColor(0.8, 0.8, 0.8, 1.0);

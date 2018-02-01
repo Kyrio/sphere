@@ -2,6 +2,7 @@
 #define WINDOW_H
 
 #include <iostream>
+#include <string>
 #include <cerrno>
 #include <cstring>
 #include <cstdint>

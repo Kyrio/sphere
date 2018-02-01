@@ -1,4 +1,5 @@
 #include <linux/input.h>
+#include <GLES3/gl3.h>
 
 #include "window.h"
 
@@ -173,9 +174,9 @@ void Window::setRunning(bool running) {
 }
 
 void Window::resize(int width, int height) {
-    // TODO Set viewport
     this->width = width;
     this->height = height;
+    glViewport(0, 0, width, height);
     wl_egl_window_resize(window, width, height, 0, 0);
 }
 
