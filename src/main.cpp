@@ -16,9 +16,9 @@ int main() {
         return 1;
     }
 
-    Shader vs(GL_VERTEX_SHADER, "shaders/vertex.glsl");
-    Shader fs(GL_FRAGMENT_SHADER, "shaders/fragment.glsl");
-    Shader gs(GL_GEOMETRY_SHADER, "shaders/wireframe.glsl");
+    Shader vs(GL_VERTEX_SHADER,   "glsl/vanilla.vert");
+    Shader gs(GL_GEOMETRY_SHADER, "glsl/vanilla.geom");
+    Shader fs(GL_FRAGMENT_SHADER, "glsl/vanilla.frag");
 
     ShaderProgram program;
     program << vs << gs << fs;
