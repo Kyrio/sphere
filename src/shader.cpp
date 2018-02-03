@@ -62,7 +62,7 @@ ShaderProgram::~ShaderProgram() {
     glDeleteProgram(id);
 }
 
-void ShaderProgram::add(Shader shader) {
+void ShaderProgram::add(Shader& shader) {
     shader.compile();
     glAttachShader(id, shader.getId());
 }
@@ -84,4 +84,9 @@ void ShaderProgram::link() {
 
 void ShaderProgram::use() {
     glUseProgram(id);
+}
+
+ShaderProgram& operator<<(ShaderProgram& program, Shader& shader) {
+    program.add(shader);
+    return program;
 }

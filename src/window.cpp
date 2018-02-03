@@ -238,6 +238,8 @@ void Window::keyboardKey(void* data, wl_keyboard* keyboard, u32 serial, u32 time
     
     if (key == KEY_ESC && state == WL_KEYBOARD_KEY_STATE_RELEASED)
         window->setRunning(false);
+    else if (key == KEY_R && state == WL_KEYBOARD_KEY_STATE_RELEASED)
+        window->resize(960, 540);
 }
 
 wl_registry_listener Window::registryListener = {

@@ -1,4 +1,4 @@
-CXX=clang++-5.0
+CXX=clang++
 CXXFLAGS=-Wall -std=c++14 -Iinclude
 LDLIBS=-lGL -lEGL -lwayland-client -lwayland-egl
 

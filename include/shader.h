@@ -29,7 +29,7 @@ class ShaderProgram {
         ShaderProgram();
         ~ShaderProgram();
         
-        void add(Shader shader);
+        void add(Shader& shader);
         void link();
         void use();
 
@@ -38,5 +38,7 @@ class ShaderProgram {
     private:
         unsigned int id;
 };
+
+ShaderProgram& operator<<(ShaderProgram& program, Shader& shader);
 
 #endif // SHADER_H
