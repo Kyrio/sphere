@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include <GLES3/gl3.h>
+#include <GLES3/gl32.h>
 
 class Shader {
     public:

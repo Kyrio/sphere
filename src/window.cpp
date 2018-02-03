@@ -1,13 +1,14 @@
 #include <linux/input.h>
-#include <GLES3/gl3.h>
+#include <GLES3/gl32.h>
 
 #include "window.h"
 
-Window::Window(int width, int height, std::string windowClass) :
+Window::Window(int width, int height, std::string windowClass, std::string windowTitle) :
     width(width),
     height(height),
     running(false),
-    windowClass(windowClass)
+    windowClass(windowClass),
+    windowTitle(windowTitle)
 {
 }
 
@@ -59,6 +60,7 @@ bool Window::initWayland() {
 
     wl_shell_surface_add_listener(shellSurface, &shellSurfaceListener, this);
     wl_shell_surface_set_class(shellSurface, windowClass.c_str());
+    wl_shell_surface_set_title(shellSurface, windowTitle.c_str());
     wl_shell_surface_set_toplevel(shellSurface);
 
     window = wl_egl_window_create(surface, width, height);

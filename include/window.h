@@ -17,7 +17,7 @@ using i32 = std::int32_t;
 
 class Window {
     public:
-        Window(int width, int height, std::string windowClass);
+        Window(int width, int height, std::string windowClass, std::string windowTitle);
         ~Window();
 
         bool initWayland();
@@ -69,6 +69,7 @@ class Window {
         int height;
         bool running;
         std::string windowClass;
+        std::string windowTitle;
 
         wl_compositor* compositor;
         wl_shell* shell;
