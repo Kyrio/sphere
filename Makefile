@@ -9,10 +9,10 @@ SOURCES = $(wildcard src/*.cpp)
 OBJECTS = $(SOURCES:src/%.cpp=obj/%.o)
 
 $(EXEC): $(OBJECTS)
-	$(CXX) $(LDLIBS) -o $@ $^
+	$(CXX) $^ $(LDLIBS) -o $@
 
 obj/%.o: src/%.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $< $(CXXFLAGS) -c -o $@ 
 
 run: $(EXEC)
 	./$(EXEC)
